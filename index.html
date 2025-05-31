@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genealogy Chart - Descendants of Peter I. Friesen</title>
+    <title>Descendants of Peter I. Friesen</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -155,7 +155,7 @@
 <body class="bg-gray-100 p-4 md:p-8">
     <div class="container mx-auto scroll">
         <header class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Descendants of Peter I. Friesen</h1>
+            <!-- <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Descendants of Peter I. Friesen</h1> -->
             <!-- <p class="text-gray-600 mt-2">Interactive Genealogy Chart</p> -->
         </header>
         <div id="loading" class="text-center py-10">
@@ -171,19 +171,19 @@
         function parseGenealogyData(text) {
             const lines = text.trim().split('\n').filter(line => line.trim() !== '');
             if (lines.length === 0) return null;
-            let rootPersonData = parsePersonLine(lines[2], 0);
+            let rootPersonData = parsePersonLine(lines[1], 0);
             if (!rootPersonData || !rootPersonData.name) {
                 console.error("Could not parse the root person from the data.");
                 displayError("Error: Could not parse the root ancestor from the provided data. Please check the format.");
                 return null;
             }
-            const people = [];
-            let currentPath = []; // To keep track of current parentage
             rootPersonData.children = [];
+            const people = [];
             people.push(rootPersonData);
+            let currentPath = []; // To keep track of current parentage
             currentPath.push(rootPersonData);
 
-            for (let i = 3; i < lines.length; i++) {
+            for (let i = 2; i < lines.length; i++) {
                 const line = lines[i];
                 const trimmedLine = line.trim();
                 if (trimmedLine === '') continue;
@@ -230,11 +230,11 @@
                 person.name = nameMatch[0].replace(/^[\d\s\.]*/, '').trim();
             }
             
-            // Extract birth year (simple version)
+            // Extract birth year
             let birthMatch = line.match(/born\s+([\d\?]{1,2} [A-Za-z\?]{3} [\d\?]{4})/);
             if (birthMatch) person.birth = birthMatch[1];
 
-            // Extract death year (simple version)
+            // Extract death year
             let deathMatch = line.match(/died\s+([\d\?]{1,2} [A-Za-z\?]{3} [\d\?]{4})/);
             if (deathMatch) person.death = deathMatch[1];
 
@@ -249,11 +249,10 @@
                 person.spouses.push({ name: spouseName });
             }
             
-            // If no name was found, it might be a line we can't parse well (e.g. "Descendants of...")
-            if (!person.name && line.toLowerCase().startsWith("descendants of")) {
+            // If no name was found, it might be a line we can't parse well
+            if (!person.name) {
                 return { name: line, birth: '', death: '', spouses: [], children: [], level: level, raw: line, isHeader: true };
             }
-        
             return person;
         }
 
@@ -338,10 +337,17 @@
             
             try {
                 const url = 'https://docs.google.com/document/d/1nL3q9ZKeGxsuGDwXSp9nTp8GVGLuwqoAumrpzLEWJxA/export?format=txt';
-                readTextFromUrl(url)
-                .then(genealogyDataText => {
-                    const parsedData = parseGenealogyData(genealogyDataText);
-                    
+                // readTextFromUrl(url)
+                fetch(url, {
+                    mode: 'cors',
+                    headers: {
+                        'Access-Control-Allow-Origin':'*'
+                    }
+                })
+                .then((response) => response.text())
+                .then((text) => {
+                    const parsedData = parseGenealogyData(text);
+
                     if (parsedData) {
                         const rootUl = document.createElement('ul');
                         renderTree(parsedData, rootUl, false);
