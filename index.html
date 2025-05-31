@@ -337,14 +337,7 @@
             
             try {
                 const url = 'https://docs.google.com/document/d/1nL3q9ZKeGxsuGDwXSp9nTp8GVGLuwqoAumrpzLEWJxA/export?format=txt';
-                // readTextFromUrl(url)
-                fetch(url, {
-                    mode: 'cors',
-                    headers: {
-                        'Access-Control-Allow-Origin':'*'
-                    }
-                })
-                .then((response) => response.text())
+                readTextFromUrl(url)
                 .then((text) => {
                     const parsedData = parseGenealogyData(text);
 
